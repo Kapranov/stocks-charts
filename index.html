@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Stock Quotes Live</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="js/libs/jquery.js"></script>
+    <script src="js/libs/bootstrap.js"></script>
+    <script src="js/libs/handlebars.js"></script>
+    <script src="js/libs/ember.js"></script>
+    <script src="js/libs/ember-data.js"></script>
+    <script src="js/libs/d3.js"></script>
+  </head>
+
+  <body>
+
+    <script type="text/x-handlebars">
+      {{partial "navbar"}}
+      <div class="container">
+          {{outlet}}
+      </div>
+      {{partial "footer"}}
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="navbar">
+      <header class="navbar navbar-default">
+          <nav class="navbar-header" role="navigation">
+              {{#link-to "index" class="navbar-brand"}}Stocks and Charts Dashboard{{/link-to}}
+              {{#view "App.SearchView" tagName="form" classNames="navbar-form pull-right" role="search"}}
+              <div class="input-group">
+                  <span class="input-group-addon">$
+                      {{#if isSearching}}
+                      <span class="glyphicon glyphicon-refresh spin"></span>
+                      {{/if}}
+                  </span>
+                  {{input placeholder="Symbol Lookup" autocomplete="off" classNames="form-control" valueBinding="searchTerm"}}
+                  <div id="search-results-list" class="list-group">
+                      {{#each}}
+                      {{#link-to "period" id "1m" class="list-group-item"}}
+                      <strong>{{id}}</strong> - <small>{{name}}</small>
+                      {{/link-to}}
+                      {{/each}}
+                  </div>
+                  <div class="input-group-btn">
+                      <button class="btn btn-default" {{action "search"}}><i class="glyphicon glyphicon-search"></i></button>
+                  </div>
+              </div>
+              {{/view}}
+          </nav>
+      </header>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="index">
+      <div class="jumbotron">
+          <h2>Stock Quotes and Business News Live NOW!</h2>
+          <p class="tagline">
+              Lookup for a symbol to get started or search company in upper box.
+          </p>
+              {{#link-to "period" "AAPL" "1m" class="btn btn-primary btn-lg"}}Apple{{/link-to}}
+              {{#link-to "period" "GOOG" "1m" class="btn btn-primary btn-lg"}}Google{{/link-to}}
+              {{#link-to "period" "MSFT" "1m" class="btn btn-primary btn-lg"}}Microsoft{{/link-to}}
+              {{#link-to "period" "ORCL" "1m" class="btn btn-primary btn-lg"}}Oracle{{/link-to}}
+              {{#link-to "period" "INTC" "1m" class="btn btn-primary btn-lg"}}Intel{{/link-to}}
+              {{#link-to "period" "SSUN.DE" "1m" class="btn btn-primary btn-lg"}}Samsung{{/link-to}}
+          </p>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="chart">
+      <section id="quote">
+          {{outlet}}
+      </section>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="quote">
+      <h1><strong>{{Symbol}}</strong> <small>{{Name}}</small> <span class="price"><small>({{Change}})</small> ${{LastTradePriceOnly}}</span></h1>
+
+      <ul class="nav nav-tabs" role="tablist">
+          {{#link-to "period" "1m" tagName="li" }}<a {{bind-attr href="view.href"}}>1M</a>{{/link-to}}
+          {{#link-to "period" "3m" tagName="li" }}<a {{bind-attr href="view.href"}}>3M</a>{{/link-to}}
+          {{#link-to "period" "6m" tagName="li" }}<a {{bind-attr href="view.href"}}>6M</a>{{/link-to}}
+          {{#link-to "period" "1y" tagName="li"}}<a  {{bind-attr href="view.href"}}>1Y</a>{{/link-to}}
+          {{#link-to "period" "5y" tagName="li" }}<a  {{bind-attr href="view.href"}}>5Y</a>{{/link-to}}
+          {{#link-to "period" "max" tagName="li"}}<a  {{bind-attr href="view.href"}}>Max</a>{{/link-to}}
+      </ul>
+      {{#view "App.GraphView" id="chart" classNames="tab-content"}}
+      {{#if isLoading}}
+      <p id="chart-loading"><span class="glyphicon glyphicon-refresh spin"></span> Loading...</p>
+      {{/if}}
+      {{/view}}
+
+      <dl id="quote-details" class="dl-horizontal">
+          <dt>Last Trade Price</dt><dd>${{LastTradePriceOnly}}</dd>
+          <dt>Day's Range</dt><dd>${{DaysRange}}</dd>
+          <dt>Change</dt><dd>{{Change}}</dd>
+          <dt>Volume</dt><dd>{{Volume}}</dd>
+          <dt>Average Daily Volume</dt><dd>{{AverageDailyVolume}}</dd>
+          <dt>Day's Low</dt><dd>${{DaysLow}}</dd>
+          <dt>Day's High</dt><dd>${{DaysHigh}}</dd>
+          <dt>Year Low</dt><dd>${{YearLow}}</dd>
+          <dt>Year High</dt><dd>${{YearHigh}}</dd>
+          <dt>Market Capitalization</dt><dd>${{MarketCapitalization}}</dd>
+          <dt>Stock Exchange<dd>{{StockExchange}}</dd>
+      </dl>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="404">
+      <div class="jumbotron">
+          <h1>OOPS!</h1>
+          <p class="tagline">
+              Could not find what you were looking for.
+          </p>
+          <p>How about something else? Here are few good ones.</p>
+          <p>
+              {{#link-to "period" "AAPL" "1m" class="btn btn-primary btn-lg"}}Apple{{/link-to}}
+              {{#link-to "period" "GOOG" "1m" class="btn btn-primary btn-lg"}}Google{{/link-to}}
+              {{#link-to "period" "MSFT" "1m" class="btn btn-primary btn-lg"}}Microsoft{{/link-to}}
+              {{#link-to "period" "ORCL" "1m" class="btn btn-primary btn-lg"}}Oracle{{/link-to}}
+              {{#link-to "period" "INTC" "1m" class="btn btn-primary btn-lg"}}Intel{{/link-to}}
+              {{#link-to "period" "SSUN.DE" "1m" class="btn btn-primary btn-lg"}}Samsung{{/link-to}}
+          </p>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="footer">
+      <footer class="container">
+          <hr />
+          <span class="pull-left text-muted">Oleg G.Kapranov</span>
+          <span class="pull-right text-muted">lugatex@yahoo.com</span>
+      </footer>
+    </script>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>
